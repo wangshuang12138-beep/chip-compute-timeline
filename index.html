@@ -188,6 +188,22 @@
   /* 模型泳道在最上层,焦点卡片改为向下展开,避免顶部裁切 */
   .lane[data-lane="model"] .node.focus .node-card { top: 46px; bottom: auto; transform-origin: top center; }
   .node.focus .mini-label { transform: translateX(-50%) scale(1.5); opacity: 1; font-weight: 700; }
+  /* 卡片泳道身份:色条 + 泳道名,四个维度一眼可辨 */
+  .node-card { --lc: var(--gold); }
+  .lane[data-lane="model"] .node-card { --lc: var(--coral); }
+  .lane[data-lane="chip"] .node-card { --lc: var(--gold); }
+  .lane[data-lane="board"] .node-card { --lc: var(--cyan); }
+  .lane[data-lane="device"] .node-card { --lc: var(--violet); }
+  .node-card::before {
+    content: ""; position: absolute; top: 0; left: 10px; right: 10px; height: 2px;
+    border-radius: 0 0 2px 2px; background: var(--lc); opacity: .8;
+  }
+  .node.focus .node-card::before { opacity: 1; box-shadow: 0 0 8px var(--lc); }
+  .nc-lane { font-family: var(--mono); font-size: 9px; letter-spacing: .18em; color: var(--lc); }
+  /* 焦点舞台化:焦点卡邻近的其他泳道节点主动让位淡出 */
+  .node.dim .mini-label, .node.dim .model-pill { opacity: .08 !important; }
+  .node.dim .node-dot { opacity: .15; box-shadow: none !important; }
+  .node { cursor: pointer; }
   .node-card .nc-year { font-family: var(--mono); font-size: 11px; color: var(--muted); }
   .node-card .nc-name { font-size: 14px; font-weight: 600; margin: 2px 0; }
   .node-card .nc-spec { font-size: 12px; color: var(--muted); font-family: var(--mono); }
@@ -464,6 +480,7 @@ function addGrid(yr) {
   grid.appendChild(gl);
 }
 
+const LANE_NAME = { model: "模型 · MODEL", chip: "芯片 · CHIP", board: "板卡 · BOARD", device: "设备 · DEVICE" };
 /* 渲染节点:同泳道按水平间距分三层放置迷你标签(下/上18px/上34px),避免叠字 */
 const laneEls = document.querySelectorAll(".lane");
 const laneLvLastX = { model: [-1e9, -1e9, -1e9], chip: [-1e9, -1e9, -1e9], board: [-1e9, -1e9, -1e9], device: [-1e9, -1e9, -1e9] };
@@ -501,8 +518,21 @@ EVENTS.slice().sort((a, b) => a.y - b.y).forEach(ev => {
     <div class="node-dot"></div>
     <div class="mini-label">${ev.mini || ev.name}</div>
     ${modelPill}`;
+  node.innerHTML = node.innerHTML.replace('<div class="nc-year">',
+    `<div class="nc-lane">${LANE_NAME[ev.lane]}</div><div class="nc-year">`);
   lane.appendChild(node);
   ev._el = node;
+  ev._x = x;
+  /* 点击节点 = 手动介入:跳到它的展示段,平滑滚到居中 */
+  node.addEventListener("click", e => {
+    if (e.target.closest("a")) return;
+    const seg = PLAN.find(sg => sg.kind === "stay" && sg.ev === ev);
+    if (!seg) return;
+    playing = false; playBtn.textContent = "▶";
+    elapsed = seg.t0 + 16;
+    setProgress(elapsed / DURATION);
+    seeking = true;
+  });
 });
 
 function fmtYear(y) {
@@ -573,7 +603,7 @@ function tToFocus(t) {
   const last = PLAN[PLAN.length - 1];
   return { x: last.x, focusEv: last.ev };
 }
-let playing = false, progress = 0, lastTs = 0, displayedModel = -1, elapsed = 0;
+let playing = false, seeking = false, progress = 0, lastTs = 0, displayedModel = -1, elapsed = 0;
 let focusX = evSorted.length ? evSorted[0].x : 60;
 let scrollCur = 0;
 
@@ -603,6 +633,9 @@ function setProgress(p) {
   EVENTS.forEach(ev => {
     ev._el.classList.toggle("active", ev.y <= year);
     ev._el.classList.toggle("focus", ev === focusEv);
+    /* 焦点卡邻近的其他泳道节点淡出,把舞台让给焦点(防跨泳道遮挡) */
+    const dim = focusEv && ev !== focusEv && ev.lane !== focusEv.lane && Math.abs(ev._x - focusX) < 175;
+    ev._el.classList.toggle("dim", !!dim);
     if (ev.y <= year && ev.lane !== "model" && typeof ev.model === "number" && ev.model > maxModel) maxModel = ev.model;
   });
 
@@ -614,15 +647,15 @@ function setProgress(p) {
 
   /* 视口锁定:焦点节点永远在屏幕水平中心 */
   const target = Math.max(0, Math.min(W - outer.clientWidth, focusX - outer.clientWidth * 0.5));
-  if (!playing) { scrollCur = target; outer.scrollLeft = target; }
+  if (!playing && !seeking) { scrollCur = target; outer.scrollLeft = target; }
 }
 
 /* 平滑滚动循环:播放时缓动追焦,暂停/拖动时静止 */
 (function scrollLoop() {
-  if (playing) {
+  if (playing || seeking) {
     const target = Math.max(0, Math.min(W - outer.clientWidth, focusX - outer.clientWidth * 0.5));
     scrollCur += (target - scrollCur) * 0.11;
-    if (Math.abs(target - scrollCur) < 0.4) scrollCur = target;
+    if (Math.abs(target - scrollCur) < 0.4) { scrollCur = target; seeking = false; }
     outer.scrollLeft = scrollCur;
   }
   requestAnimationFrame(scrollLoop);
