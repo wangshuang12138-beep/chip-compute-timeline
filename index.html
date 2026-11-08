@@ -147,6 +147,17 @@
   .node.alt .mini-label { top: auto; bottom: 18px; }
   .node.alt2 .mini-label { top: auto; bottom: 34px; }
 
+  /* 模型规模徽章：常驻显示在节点正上方，硬件支持多大模型一眼可见 */
+  .model-pill {
+    position: absolute; bottom: 54px; left: 50%; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 9px; padding: 1px 7px; border-radius: 3px;
+    background: rgba(217,166,72,.15); color: var(--gold); border: 1px solid rgba(217,166,72,.32);
+    opacity: 0; transition: opacity .5s; white-space: nowrap; pointer-events: none;
+    letter-spacing: .03em;
+  }
+  .model-pill.cv { background: rgba(139,144,152,.12); color: var(--muted); border-color: rgba(139,144,152,.3); }
+  .node.active .model-pill { opacity: 1; }
+
   .node-card {
     position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(6px);
     width: 190px; background: rgba(18, 21, 29, 0.96);
@@ -330,34 +341,36 @@
 /* lane: chip=芯片  board=板卡·模组  device=一体机·设备
    model: 可跑模型规模(B, 估算)  0=问世时跑不了LLM  cv=传统视觉模型时代  null=非硬件事件 */
 const EVENTS = [
-  // ---- 芯片 ----
-  { y:1947,   lane:"chip", name:"晶体管", spec:"贝尔实验室", model:null, note:"算力的起点", src:"https://ethw.org/History_of_the_Transistor", srcName:"IEEE ETHW 技术史" },
-  { y:1971,   lane:"chip", name:"Intel 4004", spec:"首个商用微处理器 · 740kHz", model:null, note:"算力缩进指甲盖，集中化时代", src:"https://www.intel.com/content/www/us/en/history/museum-story-of-intel-4004.html", srcName:"Intel 官方" },
-  { y:1999.6, lane:"chip", name:"GeForce 256", spec:"NVIDIA · 首个 GPU 概念", model:null, note:"并行架构诞生，为游戏而生", src:"https://www.nvidia.com/en-us/about-nvidia/corporate-timeline/", srcName:"NVIDIA 官方时间线" },
-  { y:2007.5, lane:"chip", name:"CUDA", spec:"GPU 通用编程平台", model:null, note:"游戏显卡变科研武器", src:"https://www.nvidia.com/en-us/about-nvidia/corporate-timeline/", srcName:"NVIDIA 官方时间线" },
-  { y:2012.5, lane:"chip", name:"AlexNet", spec:"2× GTX 580 · ImageNet 错误率 ↓10pp", model:null, note:"GPU 被 AI 正式征用", src:"https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks", srcName:"NeurIPS 2012 论文" },
-  { y:2015.3, lane:"chip", name:"TPU v1", spec:"Google ASIC · 92 TOPS INT8", model:null, note:"专用化开端：只为矩阵运算（2015 年内部部署）", src:"https://cloud.google.com/blog/products/ai-machine-learning/an-in-depth-look-at-googles-first-tensor-processing-unit-tpu", srcName:"Google Cloud 官方" },
-  { y:2017.6, lane:"chip", name:"Transformer / Cambricon-1A", mini:"Transformer", spec:"Attention 架构 · 麒麟970 NPU", model:null, note:"大模型架构锁定；NPU 商用元年", src:"https://arxiv.org/abs/1706.03762", srcName:"arXiv 论文 / 华为麒麟970" },
-  { y:2018.77, lane:"chip", name:"昇腾 310 / 910", mini:"昇腾310/910", spec:"16 TOPS INT8 / 8W · 256 TFLOPS FP16", model:0, note:"国产 AI 芯片登堂（2018.10 华为全联接大会）", src:"https://e.huawei.com/en/products/computing/ascend/ascend-310", srcName:"华为官方" },
-  { y:2022.9, lane:"chip", name:"ChatGPT", spec:"OpenAI · GPT-3.5", model:null, note:"端侧需求被点燃", src:"https://openai.com/index/chatgpt/", srcName:"OpenAI 官方" },
-  { y:2025.1, lane:"chip", name:"DeepSeek-R1", spec:"开源推理模型 · 2025.1.20 发布", model:null, note:"开源模型推理成本再砍一个数量级", src:"https://github.com/deepseek-ai/DeepSeek-R1", srcName:"DeepSeek 官方" },
+  /* ===== 芯片 ===== */
+  { y:1947,   lane:"chip", name:"贝尔实验室 · 晶体管", mini:"贝尔实验室 晶体管", spec:"点接触式晶体管问世", model:null, note:"算力的起点", src:"https://ethw.org/History_of_the_Transistor", srcName:"IEEE ETHW 技术史" },
+  { y:1971,   lane:"chip", name:"Intel 4004", spec:"首个商用微处理器 · 740kHz", model:null, note:"算力缩进指甲盖", src:"https://www.intel.com/content/www/us/en/history/museum-story-of-intel-4004.html", srcName:"Intel 官方" },
+  { y:1999.6, lane:"chip", name:"NVIDIA GeForce 256", spec:"首个 GPU 概念", model:null, note:"并行架构诞生，为游戏而生", src:"https://www.nvidia.com/en-us/about-nvidia/corporate-timeline/", srcName:"NVIDIA 官方时间线" },
+  { y:2007.5, lane:"chip", name:"NVIDIA CUDA", spec:"GPU 通用编程平台", model:null, note:"游戏显卡变科研武器", src:"https://www.nvidia.com/en-us/about-nvidia/corporate-timeline/", srcName:"NVIDIA 官方时间线" },
+  { y:2012.5, lane:"chip", name:"AlexNet（多伦多大学 Hinton 团队）", mini:"AlexNet", spec:"2× GTX 580 · ImageNet 错误率 ↓10pp", model:null, note:"GPU 被 AI 正式征用", src:"https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks", srcName:"NeurIPS 2012 论文" },
+  { y:2015.3, lane:"chip", name:"Google TPU v1", spec:"ASIC · 92 TOPS INT8", model:null, note:"专用化开端：只为矩阵运算（2015 年内部部署）", src:"https://cloud.google.com/blog/products/ai-machine-learning/an-in-depth-look-at-googles-first-tensor-processing-unit-tpu", srcName:"Google Cloud 官方" },
+  { y:2017.6, lane:"chip", name:"Google Transformer 论文", mini:"Transformer", spec:"Attention Is All You Need", model:null, note:"大模型架构锁定，此后一切 AI 的底座", src:"https://arxiv.org/abs/1706.03762", srcName:"arXiv 1706.03762" },
+  { y:2017.9, lane:"chip", name:"寒武纪 Cambricon-1A", mini:"Cambricon-1A", spec:"麒麟970 内置 NPU · 端侧推理专用", model:0, note:"手机芯片第一次集成 AI 单元", src:"https://www.cambricon.com/index.php?m=content&c=index&a=lists&catid=73", srcName:"寒武纪官方" },
+  { y:2018.77, lane:"chip", name:"华为 昇腾 310", mini:"昇腾310", spec:"推理芯片 · 16 TOPS INT8 / 8W", model:0, note:"端侧推理 · 后来装进运营商网关的就是它", src:"https://e.huawei.com/en/products/computing/ascend/ascend-310", srcName:"华为官方" },
+  { y:2019.2, lane:"chip", name:"华为 昇腾 910", mini:"昇腾910", spec:"训练芯片 · 256 TFLOPS FP16", model:null, note:"国产训练算力对标国际旗舰 · 2018.10 与 310 同场发布", src:"https://e.huawei.com/en/products/computing/ascend/ascend-910", srcName:"华为官方" },
+  { y:2022.9, lane:"chip", name:"OpenAI ChatGPT", spec:"GPT-3.5", model:null, note:"端侧跑大模型的需求被点燃", src:"https://openai.com/index/chatgpt/", srcName:"OpenAI 官方" },
+  { y:2025.1, lane:"chip", name:"DeepSeek R1", mini:"DeepSeek-R1", spec:"开源推理模型", model:null, note:"开源推理成本再砍一个数量级（2025.1.20 发布）", src:"https://github.com/deepseek-ai/DeepSeek-R1", srcName:"DeepSeek 官方仓库" },
 
-  // ---- 板卡·模组 ----
-  { y:2014.23, lane:"board", name:"Jetson TK1", mini:"TK1", spec:"0.3 TFLOPS · 首款嵌入式 AI 超算", model:0, note:"算力第一次走出机房（2014.3 GTC）", src:"https://blogs.nvidia.com/blog/jetson-tk1/", srcName:"NVIDIA 官方" },
-  { y:2015.85, lane:"board", name:"Jetson TX1", mini:"TX1", spec:"1 TFLOPS FP16 · 64bit", model:0, note:"边缘开发平台成型", src:"https://developer.nvidia.com/embedded/jetson-tx1", srcName:"NVIDIA 官方" },
-  { y:2017.3, lane:"board", name:"Jetson TX2", mini:"TX2", spec:"2 TOPS", model:0, note:"边缘算力翻倍", src:"https://developer.nvidia.com/embedded/jetson-tx2", srcName:"NVIDIA 官方" },
-  { y:2018.6, lane:"board", name:"Jetson AGX Xavier", mini:"Xavier", spec:"32 TOPS", model:0.1, note:"边缘推理可用，~0.1B 级", src:"https://developer.nvidia.com/embedded/jetson-agx-xavier-developer-kit", srcName:"NVIDIA 官方" },
-  { y:2019.3, lane:"board", name:"Jetson Nano", mini:"Nano", spec:"$99 · 0.5 TFLOPS", model:0, note:"全民 AI 开发板", src:"https://developer.nvidia.com/embedded/jetson-nano-developer-kit", srcName:"NVIDIA 官方" },
-  { y:2019.4, lane:"board", name:"Atlas 200/300", mini:"Atlas", spec:"200: 16 TOPS 模组 · 300: 64 TOPS 推理卡", model:1, note:"国产边缘模组工业化", src:"https://e.huawei.com/en/products/computing/ascend/atlas-300i-pro", srcName:"华为官方" },
+  /* ===== 板卡 · 模组 ===== */
+  { y:2014.23, lane:"board", name:"NVIDIA Jetson TK1", mini:"TK1", spec:"0.3 TFLOPS · 首款嵌入式 AI 超算", model:0, note:"算力第一次走出机房（2014.3 GTC）", src:"https://blogs.nvidia.com/blog/jetson-tk1/", srcName:"NVIDIA 官方" },
+  { y:2015.85, lane:"board", name:"NVIDIA Jetson TX1", mini:"TX1", spec:"1 TFLOPS FP16 · 64bit", model:0, note:"边缘开发平台成型", src:"https://developer.nvidia.com/embedded/jetson-tx1", srcName:"NVIDIA 官方" },
+  { y:2017.3, lane:"board", name:"NVIDIA Jetson TX2", mini:"TX2", spec:"2 TOPS", model:0, note:"边缘算力翻倍", src:"https://developer.nvidia.com/embedded/jetson-tx2", srcName:"NVIDIA 官方" },
+  { y:2018.6, lane:"board", name:"NVIDIA Jetson AGX Xavier", mini:"Xavier", spec:"32 TOPS", model:0.1, note:"边缘推理可用，~0.1B 级", src:"https://developer.nvidia.com/embedded/jetson-agx-xavier-developer-kit", srcName:"NVIDIA 官方" },
+  { y:2019.3, lane:"board", name:"NVIDIA Jetson Nano", mini:"Nano", spec:"$99 · 0.5 TFLOPS", model:0, note:"全民 AI 开发板", src:"https://developer.nvidia.com/embedded/jetson-nano-developer-kit", srcName:"NVIDIA 官方" },
+  { y:2019.4, lane:"board", name:"华为 Atlas 200 / 300", mini:"Atlas 300", spec:"200 模组 16 TOPS · 300 推理卡 64 TOPS", model:1, note:"国产边缘模组工业化", src:"https://e.huawei.com/en/products/computing/ascend/atlas-300i-pro", srcName:"华为官方" },
   { y:2021.95, lane:"board", name:"瑞芯微 RK3588", mini:"RK3588", spec:"8nm · 6 TOPS NPU", model:0.3, note:"国产边缘盒子事实标准（2021.12 发布）", src:"https://www.rock-chips.com/a/cn/product/RK35/2022/0926/1660.html", srcName:"瑞芯微官方" },
-  { y:2022.3, lane:"board", name:"Jetson AGX Orin", mini:"Orin", spec:"275 TOPS", model:7, note:"7B 级本地大模型成真", src:"https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/", srcName:"NVIDIA 官方" },
+  { y:2022.3, lane:"board", name:"NVIDIA Jetson AGX Orin", mini:"AGX Orin", spec:"275 TOPS", model:7, note:"7B 级本地大模型成真", src:"https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/", srcName:"NVIDIA 官方" },
   { y:2022.6, lane:"board", name:"算能 BM1684X", mini:"BM1684X", spec:"32 TOPS INT8", model:1, note:"盒子价格打到千元档", src:"https://www.sophgo.com/product/", srcName:"算能官方" },
-  { y:2025.6, lane:"board", name:"Jetson AGX Thor", mini:"Thor", spec:"2070 TFLOPS FP4（稀疏）", model:70, note:"边缘算力剑指机器人，70B 级（2025.8 上市）", src:"https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-thor/", srcName:"NVIDIA 官方" },
+  { y:2025.6, lane:"board", name:"NVIDIA Jetson AGX Thor", mini:"AGX Thor", spec:"2070 TFLOPS FP4（稀疏）", model:70, note:"边缘算力剑指机器人，70B 级（2025.8 上市）", src:"https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-thor/", srcName:"NVIDIA 官方" },
 
-  // ---- 一体机·设备 ----
-  { y:2019.4, lane:"device", name:"Atlas 500 智能小站", mini:"Atlas 500", spec:"16 TOPS · 边缘一体机", model:1, note:"边缘盒子工业化", src:"https://e.huawei.com/en/products/computing/ascend/atlas-500", srcName:"华为官方" },
-  { y:2019.7, lane:"device", name:"Atlas 800 / 900", mini:"Atlas 900", spec:"训练服务器 / AI 集群 · 2019.9 全联接大会", model:null, note:"国产训练算力标杆", src:"https://e.huawei.com/en/products/computing/ascend/atlas-800-training-server", srcName:"华为官方" },
-  { y:2023.85, lane:"device", name:"中国电信算力化网关", mini:"电信网关", spec:"FTTO + 昇腾算力 · 支持 7B/14B", model:14, note:"全球首个商用 网络+算力 融合终端 ★ · 企业资料口径", src:"https://www.c114.com.cn/news/117/a1247662.html", srcName:"C114 · 2023数字科技生态大会(2023.11 广州)" },
+  /* ===== 一体机 · 设备 ===== */
+  { y:2019.4, lane:"device", name:"华为 Atlas 500 智能小站", mini:"Atlas 500", spec:"16 TOPS · 边缘一体机", model:1, note:"边缘盒子工业化", src:"https://e.huawei.com/en/products/computing/ascend/atlas-500", srcName:"华为官方" },
+  { y:2019.7, lane:"device", name:"华为 Atlas 800 / 900", mini:"Atlas 900", spec:"训练服务器 / AI 集群", model:null, note:"国产训练算力标杆", src:"https://e.huawei.com/en/products/computing/ascend/atlas-800-training-server", srcName:"华为官方" },
+  { y:2023.85, lane:"device", name:"中国电信 算力化网关", mini:"电信算力网关", spec:"FTTO + 昇腾算力 · 支持 7B/14B", model:14, note:"全球首个商用 网络+算力 融合终端 ★ · 企业资料口径", src:"https://www.c114.com.cn/news/117/a1247662.html", srcName:"C114 · 2023数字科技生态大会(2023.11 广州)" },
   { y:2024.4, lane:"device", name:"中国移动 AI 智能体网关", mini:"移动AI网关", spec:"九天大模型 + 智能算力仓", model:14, note:"运营商全员进场 · 公开发布出处待补", src:"https://www.10086.cn/aboutus/news/groupnews/index_detail_49879.html", srcName:"中国移动官网 · 九天基座发布(2024.5) 佐证" },
   { y:2024.6, lane:"device", name:"中国联通 星格", mini:"联通星格", spec:"网络大模型 + AI-FTTR", model:null, note:"聚焦组网策略智能 · 公开出处待核", src:"", srcName:"" },
 ];
@@ -365,18 +378,36 @@ const EVENTS = [
 const YEAR_MIN = 1947, YEAR_MAX = 2027;
 const LANES = { chip: 0, board: 1, device: 2 };
 
-/* ================= 布局 ================= */
+/* ================= 布局 =================
 const inner = document.getElementById("tlInner");
 const outer = document.getElementById("tlOuter");
 const W = 4200;
-const xOf = year => 60 + ((year - YEAR_MIN) / (YEAR_MAX - YEAR_MIN)) * (W - 120);
+/* 分段比例尺：1947-2000 压缩为前段（快进铺垫），2000 后逐年展开 */
+const ANCHORS = [[1947,60],[1971,200],[1999.6,440],[2007.5,900],[2012.5,1700],[2017.6,2600],[2027,4140]];
+function yearToX(y) {
+  for (let i = 1; i < ANCHORS.length; i++) {
+    const [y0, x0] = ANCHORS[i-1], [y1, x1] = ANCHORS[i];
+    if (y <= y1) return x0 + (y - y0) * (x1 - x0) / (y1 - y0);
+  }
+  return ANCHORS[ANCHORS.length-1][1];
+}
+function xToYear(x) {
+  for (let i = 1; i < ANCHORS.length; i++) {
+    const [y0, x0] = ANCHORS[i-1], [y1, x1] = ANCHORS[i];
+    if (x <= x1) return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
+  }
+  return 2027;
+}
+const xOf = yearToX;
 
-/* 年份网格 */
+/* 年份网格：前段只标关键年，2012 后每 2 年一条 */
 const grid = document.getElementById("gridLines");
-for (let yr = 1950; yr <= 2025; yr += 5) {
+[1971, 1999, 2005, 2010].forEach(yr => addGrid(yr));
+for (let yr = 2012; yr <= 2026; yr += 2) addGrid(yr);
+function addGrid(yr) {
   const gl = document.createElement("div");
   gl.className = "gl";
-  gl.style.left = xOf(yr) + "px";
+  gl.style.left = yearToX(yr) + "px";
   gl.innerHTML = `<span>${yr}</span>`;
   grid.appendChild(gl);
 }
@@ -400,6 +431,9 @@ EVENTS.slice().sort((a, b) => a.y - b.y).forEach(ev => {
   const srcLink = ev.src
     ? `<a class="nc-src" href="${ev.src}" target="_blank" rel="noopener">来源 · ${ev.srcName} ↗</a>`
     : `<span class="nc-src missing" title="官方出处待补">来源待核…</span>`;
+  const modelPill = ev.model === null ? ""
+    : ev.model === 0 ? `<span class="model-pill cv">CV only · 跑不了 LLM</span>`
+    : `<span class="model-pill">可跑 ~${ev.model}B 模型</span>`;
   node.innerHTML = `
     <div class="node-card">
       <div class="nc-year">${fmtYear(ev.y)}</div>
@@ -410,7 +444,8 @@ EVENTS.slice().sort((a, b) => a.y - b.y).forEach(ev => {
       <div>${srcLink}</div>
     </div>
     <div class="node-dot"></div>
-    <div class="mini-label">${ev.mini || ev.name}</div>`;
+    <div class="mini-label">${ev.mini || ev.name}</div>
+    ${modelPill}`;
   lane.appendChild(node);
   ev._el = node;
 });
@@ -446,8 +481,8 @@ let playing = false, progress = 0, lastTs = 0, displayedModel = -1;
 
 function setProgress(p) {
   progress = Math.min(1, Math.max(0, p));
-  const year = YEAR_MIN + progress * (YEAR_MAX - YEAR_MIN);
-  const x = xOf(year);
+  const x = 60 + progress * (W - 120);
+  const year = xToYear(x);
   playhead.style.left = x + "px";
   progressBar.style.width = (progress * 100) + "%";
   yearValue.textContent = Math.floor(year);
