@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从晶体管到算力网关 · 芯片与算力硬件演化史</title>
+<meta name="description" content="八十年芯片演化，二十年算力搬家。一条可播放的时间轴，看懂算力如何从机房走进网关。">
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-panel: #12151d;
+    --bg-grid: rgba(233, 231, 226, 0.045);
+    --text: #e9e7e2;
+    --muted: #8b9098;
+    --faint: #4a4f58;
+    --gold: #d9a648;    /* 芯片 */
+    --cyan: #5eb1c8;    /* 板卡·模组 */
+    --violet: #9a7fd4;  /* 一体机·设备 */
+    --line: rgba(233, 231, 226, 0.09);
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ---------- 顶栏 ---------- */
+  header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(11, 13, 18, 0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 24px;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .brand { font-size: 15px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; }
+  .brand em { font-style: normal; color: var(--gold); }
+  .controls { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 220px; }
+  .btn {
+    background: var(--bg-panel); color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px;
+    width: 38px; height: 38px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 15px; transition: border-color .2s, transform .15s;
+    flex-shrink: 0;
+  }
+  .btn:hover { border-color: var(--gold); }
+  .btn:active { transform: scale(0.94); }
+  #progressWrap {
+    flex: 1; height: 6px; background: var(--bg-panel);
+    border-radius: 3px; position: relative; cursor: pointer;
+  }
+  #progressBar {
+    height: 100%; width: 0%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--cyan), var(--violet));
+    transition: width 0.1s linear;
+  }
+  .year-readout { font-family: var(--mono); font-size: 15px; color: var(--muted); min-width: 52px; text-align: right; }
+
+  /* ---------- 仪表盘 ---------- */
+  .dashboard {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    gap: 24px; padding: 36px 24px 24px; max-width: 1200px; margin: 0 auto;
+  }
+  .hero-title { grid-column: 1 / -1; text-align: center; margin-bottom: 8px; }
+  .hero-title h1 { font-size: clamp(26px, 4.5vw, 44px); font-weight: 700; letter-spacing: 0.01em; }
+  .hero-title p { color: var(--muted); margin-top: 10px; font-size: clamp(14px, 1.8vw, 17px); }
+  .hero-title .lede { color: var(--text); font-weight: 500; }
+  .dial { text-align: center; }
+  .dial .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px; }
+  .dial .value { font-family: var(--mono); font-size: clamp(36px, 6vw, 64px); font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .dial .unit { font-size: 14px; color: var(--muted); font-weight: 400; }
+  #modelValue { color: var(--gold); }
+  #yearValue { color: var(--text); }
+  .divider-v { width: 1px; height: 64px; background: var(--line); }
+
+  /* ---------- 时间轴 ---------- */
+  .timeline-outer {
+    overflow-x: auto; overflow-y: hidden;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    scrollbar-width: thin; scrollbar-color: var(--faint) transparent;
+  }
+  .timeline-inner { position: relative; width: 4200px; height: 640px; }
+  .grid-lines { position: absolute; inset: 0; pointer-events: none; }
+  .grid-lines .gl { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--bg-grid); }
+  .grid-lines .gl span {
+    position: absolute; top: 8px; left: 6px;
+    font-family: var(--mono); font-size: 11px; color: var(--faint);
+  }
+  .lane { position: absolute; left: 0; right: 0; height: 190px; }
+  .lane-bg { position: absolute; inset: 0; border-top: 1px solid var(--line); }
+  .lane-label {
+    position: sticky; left: 16px; display: inline-block;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+    padding: 8px 14px; margin-top: 10px;
+    background: var(--bg-panel); border: 1px solid var(--line); border-radius: 20px;
+    z-index: 5;
+  }
+  .lane[data-lane="chip"] .lane-label { color: var(--gold); }
+  .lane[data-lane="board"] .lane-label { color: var(--cyan); }
+  .lane[data-lane="device"] .lane-label { color: var(--violet); }
+
+  /* 播放头 */
+  #playhead {
+    position: absolute; top: 0; bottom: 0; width: 2px;
+    background: linear-gradient(180deg, var(--gold), rgba(217, 166, 72, 0.15));
+    z-index: 10; pointer-events: none;
+    box-shadow: 0 0 12px rgba(217, 166, 72, 0.35);
+  }
+  #playhead::after {
+    content: ""; position: absolute; top: 0; left: -4px;
+    border: 5px solid transparent; border-top: 7px solid var(--gold);
+  }
+
+  /* 节点 */
+  .node { position: absolute; transform: translateX(-50%); z-index: 3; }
+  .node-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--faint); margin: 0 auto;
+    transition: background .4s, box-shadow .4s, transform .4s;
+    position: relative; z-index: 2;
+  }
+  .node.active .node-dot { transform: scale(1.25); }
+  .lane[data-lane="chip"] .node.active .node-dot { background: var(--gold); box-shadow: 0 0 14px rgba(217,166,72,.6); }
+  .lane[data-lane="board"] .node.active .node-dot { background: var(--cyan); box-shadow: 0 0 14px rgba(94,177,200,.6); }
+  .lane[data-lane="device"] .node.active .node-dot { background: var(--violet); box-shadow: 0 0 14px rgba(154,127,212,.6); }
+
+  /* 迷你标签：点亮后显示 */
+  .mini-label {
+    position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; color: var(--muted); white-space: nowrap;
+    opacity: 0; transition: opacity .5s; pointer-events: none;
+    font-family: var(--mono);
+  }
+  .node.active .mini-label { opacity: .8; }
+  .lane[data-lane="chip"] .node.active .mini-label { color: var(--gold); }
+  .lane[data-lane="board"] .node.active .mini-label { color: var(--cyan); }
+  .lane[data-lane="device"] .node.active .mini-label { color: var(--violet); }
+
+  .node-card {
+    position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(6px);
+    width: 190px; background: rgba(18, 21, 29, 0.96);
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; opacity: 0; filter: saturate(0.2);
+    transition: opacity .35s, transform .35s, filter .35s, border-color .35s;
+    pointer-events: none; z-index: 4;
+    box-shadow: 0 8px 28px rgba(0,0,0,.5);
+  }
+  /* 焦点节点（播放头刚经过）展开卡片；悬停任意已激活节点也展开 */
+  .node.focus .node-card, .node.active:hover .node-card {
+    opacity: 1; filter: none; transform: translateX(-50%) translateY(0);
+    pointer-events: auto; border-color: rgba(233,231,226,0.22);
+    z-index: 8;
+  }
+  .node-card .nc-year { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .node-card .nc-name { font-size: 14px; font-weight: 600; margin: 2px 0; }
+  .node-card .nc-spec { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  .node-card .nc-note { font-size: 12px; color: var(--text); margin-top: 5px; opacity: .85; }
+  .nc-model {
+    display: inline-block; margin-top: 6px; padding: 1px 8px;
+    font-family: var(--mono); font-size: 11px; border-radius: 4px;
+    background: rgba(217,166,72,.12); color: var(--gold); border: 1px solid rgba(217,166,72,.25);
+  }
+  .nc-model.cv { background: rgba(139,144,152,.1); color: var(--muted); border-color: rgba(139,144,152,.25); }
+  .nc-src { display: inline-block; margin-top: 5px; font-size: 10px; color: var(--faint); text-decoration: none; }
+  .nc-src:hover { color: var(--gold); text-decoration: underline; }
+  .nc-src.missing { color: #b0553f; }
+
+  /* ---------- 正文区 ---------- */
+  section.block { max-width: 1000px; margin: 0 auto; padding: 64px 24px; }
+  .kicker { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  h2 { font-size: clamp(22px, 3vw, 30px); margin-bottom: 22px; font-weight: 700; }
+  .rules { display: grid; gap: 14px; }
+  .rule {
+    background: var(--bg-panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 20px 24px; display: flex; gap: 18px; align-items: flex-start;
+  }
+  .rule .num {
+    font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--gold);
+    min-width: 34px; line-height: 1.3;
+  }
+  .rule h3 { font-size: 16px; margin-bottom: 6px; }
+  .rule p { font-size: 14px; color: var(--muted); }
+
+  /* ---------- 数据表 ---------- */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th, .data-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .data-table th { color: var(--muted); font-weight: 500; font-size: 12px; letter-spacing: .06em; white-space: nowrap; }
+  .data-table td:first-child { font-family: var(--mono); white-space: nowrap; color: var(--muted); }
+  .data-table .t-lane { font-size: 11px; padding: 1px 7px; border-radius: 4px; white-space: nowrap; }
+  .t-chip { background: rgba(217,166,72,.12); color: var(--gold); }
+  .t-board { background: rgba(94,177,200,.12); color: var(--cyan); }
+  .t-device { background: rgba(154,127,212,.12); color: var(--violet); }
+  .data-table a { color: var(--muted); text-decoration: none; border-bottom: 1px dotted var(--faint); }
+  .data-table a:hover { color: var(--gold); }
+  .data-table tr:hover td { background: rgba(233,231,226,0.02); }
+  .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-panel); }
+
+  .methodology {
+    margin-top: 18px; font-size: 13px; color: var(--muted);
+    background: var(--bg-panel); border: 1px solid var(--line); border-left: 3px solid var(--gold);
+    border-radius: 0 10px 10px 0; padding: 16px 20px;
+  }
+  .methodology strong { color: var(--text); }
+
+  footer {
+    border-top: 1px solid var(--line); padding: 32px 24px 48px;
+    text-align: center; color: var(--faint); font-size: 12px;
+  }
+  footer .ref { margin-top: 8px; font-size: 11px; }
+
+  @media (max-width: 720px) {
+    .dashboard { grid-template-columns: 1fr; gap: 12px; padding-top: 24px; }
+    .divider-v { display: none; }
+    .timeline-inner { height: 700px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">从<em>晶体管</em>到<em>算力网关</em></div>
+  <div class="controls">
+    <button class="btn" id="playBtn" title="播放 / 暂停 (空格)">▶</button>
+    <button class="btn" id="rewBtn" title="回到起点">⟲</button>
+    <div id="progressWrap"><div id="progressBar"></div></div>
+    <span class="year-readout" id="yearReadout">1947</span>
+  </div>
+</header>
+
+<div class="dashboard">
+  <div class="hero-title">
+    <h1>算力一直在搬家，离数据越来越近</h1>
+    <p>八十年芯片演化 · 二十年算力搬家 · <span class="lede">播放头扫过之处，就是算力到达的地方</span></p>
+  </div>
+  <div class="dial">
+    <div class="label">当前年份</div>
+    <div class="value" id="yearValue">1947</div>
+  </div>
+  <div class="divider-v"></div>
+  <div class="dial">
+    <div class="label">可跑模型规模上限 · 估算</div>
+    <div class="value"><span id="modelValue">0</span><span class="unit"> B 参数</span></div>
+  </div>
+</div>
+
+<div class="timeline-outer" id="tlOuter">
+  <div class="timeline-inner" id="tlInner">
+    <div class="grid-lines" id="gridLines"></div>
+    <div class="lane" data-lane="chip" style="top:0">
+      <div class="lane-bg"></div>
+      <span class="lane-label">芯 片</span>
+    </div>
+    <div class="lane" data-lane="board" style="top:210px">
+      <div class="lane-bg"></div>
+      <span class="lane-label">板卡 · 模组</span>
+    </div>
+    <div class="lane" data-lane="device" style="top:420px">
+      <div class="lane-bg"></div>
+      <span class="lane-label">一体机 · 设备</span>
+    </div>
+    <div id="playhead"></div>
+  </div>
+</div>
+
+<section class="block">
+  <div class="kicker">Pattern</div>
+  <h2>把八十年压缩成三句话</h2>
+  <div class="rules">
+    <div class="rule">
+      <span class="num">01</span>
+      <div>
+        <h3>数据在哪，算力去哪</h3>
+        <p>响应延迟 × 带宽成本 × 隐私约束，三个力一起推。这是物理规律，不是商业预测。</p>
+      </div>
+    </div>
+    <div class="rule">
+      <span class="num">02</span>
+      <div>
+        <h3>芯片专用化随场景确定性加深</h3>
+        <p>场景越确定，芯片越专用，能效越高（CPU→GPU→NPU→存算一体）。高阶网关用昇腾推理芯片而非通用 GPU，是这条规律的体现，不是妥协。</p>
+      </div>
+    </div>
+    <div class="rule">
+      <span class="num">03</span>
+      <div>
+        <h3>每次搬家，新形态吃掉旧形态的一部分功能</h3>
+        <p>交换机吃掉集线器，云吃掉一部分服务器，现在网关开始吃边缘盒子——因为盒子解决的"算力到场"问题，网关解决得更好：算力到场 + 网络在场 + 运维在位。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="kicker">Data & Sources</div>
+  <h2>数据底表 · 每条都有官方出处</h2>
+  <div class="table-scroll">
+    <table class="data-table" id="dataTable">
+      <thead>
+        <tr><th>时间</th><th>泳道</th><th>产品 / 事件</th><th>关键规格</th><th>可跑模型(估)</th><th>意义</th><th>官方出处</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="methodology">
+    <strong>模型规模估算口径：</strong>基于 INT8/INT4 量化推理的社区经验值（约 2 TOPS/B 参数起），仅作量级感知，非厂商标称。标 "CV" 表示该硬件诞生时只能跑传统视觉模型，大模型时代尚未到来。"—" 表示该事件非硬件产品。所有硬件规格与发布时间均以官方出处为准；估算值随核查持续修订。
+  </div>
+</section>
+
+<footer>
+  从晶体管到算力网关 · 交互时间轴 · 2026-11
+  <div class="ref">设计参考：Stripe 发布页叙事 × Linear 克制用色 · 单文件零依赖 · 数据可溯源</div>
+</footer>
+
+<script>
+/* ================= 数据 ================= */
+/* lane: chip=芯片  board=板卡·模组  device=一体机·设备
+   model: 可跑模型规模(B, 估算)  0=问世时跑不了LLM  cv=传统视觉模型时代  null=非硬件事件 */
+const EVENTS = [
+  // ---- 芯片 ----
+  { y:1947,   lane:"chip", name:"晶体管", spec:"贝尔实验室", model:null, note:"算力的起点", src:"", srcName:"" },
+  { y:1971,   lane:"chip", name:"Intel 4004", spec:"首个商用微处理器 · 740kHz", model:null, note:"算力缩进指甲盖，集中化时代", src:"", srcName:"" },
+  { y:1999,   lane:"chip", name:"GeForce 256", spec:"NVIDIA · 首个 GPU 概念", model:null, note:"并行架构诞生，为游戏而生", src:"", srcName:"" },
+  { y:2007,   lane:"chip", name:"CUDA", spec:"GPU 通用编程平台", model:null, note:"游戏显卡变科研武器", src:"", srcName:"" },
+  { y:2012.5, lane:"chip", name:"AlexNet", spec:"2× GTX 580 · ImageNet 错误率 ↓10pp", model:null, note:"GPU 被 AI 正式征用", src:"", srcName:"" },
+  { y:2015.3, lane:"chip", name:"TPU v1", spec:"Google ASIC · 92 TOPS INT8", model:null, note:"专用化开端：只为矩阵运算", src:"", srcName:"" },
+  { y:2017.6, lane:"chip", name:"Transformer / Cambricon-1A", spec:"Attention 架构 · 麒麟970 NPU", model:null, note:"大模型架构锁定；NPU 商用元年", src:"", srcName:"" },
+  { y:2018.8, lane:"chip", name:"昇腾 310 / 910", spec:"16 TOPS INT8 / 8W · 256 TFLOPS FP16", model:0, note:"国产 AI 芯片登堂，能效比当年全球最佳", src:"", srcName:"" },
+  { y:2022.9, lane:"chip", name:"ChatGPT", spec:"OpenAI · GPT-3.5", model:null, note:"端侧需求被点燃", src:"", srcName:"" },
+  { y:2025.1, lane:"chip", name:"DeepSeek-R1", spec:"开源推理模型", model:null, note:"开源模型推理成本再砍一个数量级", src:"", srcName:"" },
+
+  // ---- 板卡·模组 ----
+  { y:2014.2, lane:"board", name:"Jetson TK1", spec:"0.3 TFLOPS · 首款嵌入式 AI 超算", model:0, note:"算力第一次走出机房", src:"", srcName:"" },
+  { y:2015.9, lane:"board", name:"Jetson TX1", spec:"1 TFLOPS FP16 · 64bit", model:0, note:"边缘开发平台成型", src:"", srcName:"" },
+  { y:2017.3, lane:"board", name:"Jetson TX2", spec:"2 TFLOPS", model:0, note:"边缘算力翻倍", src:"", srcName:"" },
+  { y:2018.6, lane:"board", name:"Jetson AGX Xavier", spec:"32 TOPS", model:0.1, note:"边缘推理可用，~0.1B 级", src:"", srcName:"" },
+  { y:2019.3, lane:"board", name:"Jetson Nano", spec:"$99 · 0.5 TFLOPS", model:0, note:"全民 AI 开发板", src:"", srcName:"" },
+  { y:2019.4, lane:"board", name:"Atlas 200/300", spec:"200: 16 TOPS 模组 · 300: 64 TOPS 推理卡", model:1, note:"国产边缘模组工业化", src:"", srcName:"" },
+  { y:2021.9, lane:"board", name:"瑞芯微 RK3588", spec:"8nm · 6 TOPS NPU", model:0.3, note:"国产边缘盒子事实标准", src:"", srcName:"" },
+  { y:2022.3, lane:"board", name:"Jetson AGX Orin", spec:"275 TOPS", model:7, note:"7B 级本地大模型成真", src:"", srcName:"" },
+  { y:2022.6, lane:"board", name:"算能 BM1684X", spec:"32 TOPS INT8", model:1, note:"盒子价格打到千元档", src:"", srcName:"" },
+  { y:2025.3, lane:"board", name:"Jetson AGX Thor", spec:"2070 TFLOPS FP4", model:70, note:"边缘算力剑指机器人，70B 级", src:"", srcName:"" },
+
+  // ---- 一体机·设备 ----
+  { y:2019.4, lane:"device", name:"Atlas 500 智能小站", spec:"16 TOPS · 边缘一体机", model:1, note:"边缘盒子工业化", src:"", srcName:"" },
+  { y:2019.9, lane:"device", name:"Atlas 800 / 900", spec:"训练服务器 / AI 集群", model:null, note:"国产训练算力标杆", src:"", srcName:"" },
+  { y:2023.11, lane:"device", name:"中国电信算力化网关", spec:"FTTO + 昇腾算力 · 支持 7B/14B", model:14, note:"全球首个商用 网络+算力 融合终端 ★", src:"", srcName:"" },
+  { y:2024.5, lane:"device", name:"中国移动 AI 智能体网关", spec:"九天大模型 + 智能算力仓", model:14, note:"运营商全员进场", src:"", srcName:"" },
+  { y:2024.8, lane:"device", name:"中国联通 星格", spec:"网络大模型 + AI-FTTR", model:null, note:"聚焦组网策略智能", src:"", srcName:"" },
+];
+
+const YEAR_MIN = 1947, YEAR_MAX = 2027;
+const LANES = { chip: 0, board: 1, device: 2 };
+
+/* ================= 布局 ================= */
+const inner = document.getElementById("tlInner");
+const outer = document.getElementById("tlOuter");
+const W = 4200;
+const xOf = year => 60 + ((year - YEAR_MIN) / (YEAR_MAX - YEAR_MIN)) * (W - 120);
+
+/* 年份网格 */
+const grid = document.getElementById("gridLines");
+for (let yr = 1950; yr <= 2025; yr += 5) {
+  const gl = document.createElement("div");
+  gl.className = "gl";
+  gl.style.left = xOf(yr) + "px";
+  gl.innerHTML = `<span>${yr}</span>`;
+  grid.appendChild(gl);
+}
+
+/* 渲染节点 */
+const laneEls = document.querySelectorAll(".lane");
+const laneCounts = { chip: 0, board: 0, device: 0 };
+EVENTS.forEach((ev, i) => {
+  const lane = laneEls[LANES[ev.lane]];
+  const node = document.createElement("div");
+  node.className = "node" + (laneCounts[ev.lane]++ % 2 ? " alt" : "");
+  node.style.left = xOf(ev.y) + "px";
+  node.style.top = "96px";
+  const modelBadge = ev.model === null ? ""
+    : ev.model === 0 ? `<span class="nc-model cv">CV only</span>`
+    : `<span class="nc-model">~${ev.model}B</span>`;
+  const srcLink = ev.src
+    ? `<a class="nc-src" href="${ev.src}" target="_blank" rel="noopener">来源 · ${ev.srcName} ↗</a>`
+    : `<span class="nc-src missing" title="官方出处待补">来源待核…</span>`;
+  node.innerHTML = `
+    <div class="node-card">
+      <div class="nc-year">${fmtYear(ev.y)}</div>
+      <div class="nc-name">${ev.name}</div>
+      <div class="nc-spec">${ev.spec}</div>
+      <div class="nc-note">${ev.note}</div>
+      ${modelBadge}
+      <div>${srcLink}</div>
+    </div>
+    <div class="node-dot"></div>
+    <div class="mini-label">${ev.name}</div>`;
+  lane.appendChild(node);
+  ev._el = node;
+});
+
+function fmtYear(y) {
+  const yr = Math.floor(y);
+  const mo = Math.round((y - yr) * 12);
+  return mo ? `${yr}.${String(mo).padStart(2, "0")}` : String(yr);
+}
+
+/* ================= 数据表 ================= */
+const tbody = document.querySelector("#dataTable tbody");
+EVENTS.slice().sort((a, b) => a.y - b.y).forEach(ev => {
+  const laneTag = { chip: '<span class="t-lane t-chip">芯片</span>', board: '<span class="t-lane t-board">板卡·模组</span>', device: '<span class="t-lane t-device">一体机·设备</span>' }[ev.lane];
+  const model = ev.model === null ? "—" : ev.model === 0 ? "CV" : `~${ev.model}B`;
+  const src = ev.src ? `<a href="${ev.src}" target="_blank" rel="noopener">${ev.srcName} ↗</a>` : `<span style="color:#b0553f">待核</span>`;
+  tbody.insertAdjacentHTML("beforeend",
+    `<tr><td>${fmtYear(ev.y)}</td><td>${laneTag}</td><td><strong>${ev.name}</strong></td><td style="font-family:var(--mono);font-size:12px">${ev.spec}</td><td>${model}</td><td>${ev.note}</td><td>${src}</td></tr>`);
+});
+
+/* ================= 播放引擎 ================= */
+const playhead = document.getElementById("playhead");
+const progressBar = document.getElementById("progressBar");
+const yearValue = document.getElementById("yearValue");
+const yearReadout = document.getElementById("yearReadout");
+const modelValue = document.getElementById("modelValue");
+const playBtn = document.getElementById("playBtn");
+const rewBtn = document.getElementById("rewBtn");
+const progressWrap = document.getElementById("progressWrap");
+
+const DURATION = 42000; // ms 全程
+let playing = false, progress = 0, lastTs = 0, displayedModel = -1;
+
+function setProgress(p) {
+  progress = Math.min(1, Math.max(0, p));
+  const year = YEAR_MIN + progress * (YEAR_MAX - YEAR_MIN);
+  const x = xOf(year);
+  playhead.style.left = x + "px";
+  progressBar.style.width = (progress * 100) + "%";
+  yearValue.textContent = Math.floor(year);
+  yearReadout.textContent = Math.floor(year);
+
+  /* 激活节点 + 焦点（最近激活） */
+  let maxModel = 0, focusEv = null;
+  EVENTS.forEach(ev => {
+    const on = ev.y <= year;
+    ev._el.classList.toggle("active", on);
+    if (on) {
+      ev._el.classList.remove("focus");
+      if (typeof ev.model === "number" && ev.model > maxModel) maxModel = ev.model;
+      if (!focusEv || ev.y > focusEv.y) focusEv = ev;
+    } else {
+      ev._el.classList.remove("focus");
+    }
+  });
+  if (focusEv) focusEv._el.classList.add("focus");
+
+  /* 模型数字滚动 */
+  if (maxModel !== displayedModel) {
+    displayedModel = maxModel;
+    animateNumber(modelValue, parseFloat(modelValue.textContent) || 0, maxModel, 600);
+  }
+
+  /* 播放头跟随滚动 */
+  const viewL = outer.scrollLeft, viewR = viewL + outer.clientWidth;
+  if (x < viewL + 40 || x > viewR - 120) {
+    outer.scrollLeft = x - outer.clientWidth * 0.35;
+  }
+}
+
+function animateNumber(el, from, to, dur) {
+  const t0 = performance.now();
+  (function tick(t) {
+    const k = Math.min(1, (t - t0) / dur);
+    const eased = 1 - Math.pow(1 - k, 3);
+    const v = from + (to - from) * eased;
+    el.textContent = to % 1 ? v.toFixed(1) : Math.round(v);
+    if (k < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
+function loop(ts) {
+  if (!playing) return;
+  if (!lastTs) lastTs = ts;
+  const dt = ts - lastTs; lastTs = ts;
+  setProgress(progress + dt / DURATION);
+  if (progress < 1) requestAnimationFrame(loop);
+  else { playing = false; playBtn.textContent = "▶"; }
+}
+
+playBtn.onclick = () => {
+  playing = !playing;
+  playBtn.textContent = playing ? "⏸" : "▶";
+  lastTs = 0;
+  if (playing) { if (progress >= 1) setProgress(0); requestAnimationFrame(loop); }
+};
+rewBtn.onclick = () => { playing = false; playBtn.textContent = "▶"; setProgress(0); };
+
+progressWrap.onclick = e => {
+  const r = progressWrap.getBoundingClientRect();
+  setProgress((e.clientX - r.left) / r.width);
+};
+
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && !/input|textarea/i.test(document.activeElement.tagName)) {
+    e.preventDefault(); playBtn.click();
+  }
+});
+
+/* 拖动时间轴seek */
+let scrubbing = false;
+inner.addEventListener("pointerdown", e => {
+  scrubbing = true;
+  seekTo(e.clientX);
+});
+window.addEventListener("pointermove", e => { if (scrubbing) seekTo(e.clientX); });
+window.addEventListener("pointerup", () => scrubbing = false);
+function seekTo(clientX) {
+  const r = inner.getBoundingClientRect();
+  const x = clientX - r.left;
+  setProgress(x / W);
+}
+
+/* 初始化 */
+const hashP = location.hash.match(/p=([\d.]+)/);
+const noAuto = location.hash.includes("autoplay=0");
+setProgress(hashP ? parseFloat(hashP[1]) : 0);
+if (!noAuto) setTimeout(() => { playBtn.click(); }, 800);
+</script>
+</body>
+</html>
