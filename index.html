@@ -88,8 +88,8 @@
     position: relative;
     scrollbar-width: thin; scrollbar-color: var(--faint) transparent;
   }
-  .timeline-inner { position: relative; width: 4200px; height: 830px; }
-  .grid-lines { position: absolute; inset: 0; pointer-events: none; }
+  .timeline-inner { position: relative; width: 5600px; height: 830px; }
+  .grid-lines { position: absolute; inset: 0; width: 4200px; pointer-events: none; }
   .grid-lines .gl { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--bg-grid); }
   .grid-lines .gl span {
     position: absolute; top: 8px; left: 6px;
@@ -178,14 +178,16 @@
     pointer-events: auto; border-color: rgba(233,231,226,0.22);
     z-index: 8;
   }
-  /* 放大镜:播放头焦点节点卡片放大 + 迷你标签放大加亮 */
+  /* 放大镜:焦点节点居中放大——舞台级 spotlight 效果 */
   .node.focus .node-card {
-    transform: translateX(-50%) translateY(0) scale(1.09);
+    transform: translateX(-50%) translateY(0) scale(1.4);
     border-color: rgba(217,166,72,.6);
     box-shadow: 0 8px 28px rgba(0,0,0,.5), 0 0 26px rgba(217,166,72,.22);
     z-index: 30;
   }
-  .node.focus .mini-label { transform: translateX(-50%) scale(1.3); opacity: 1; font-weight: 700; }
+  /* 模型泳道在最上层,焦点卡片改为向下展开,避免顶部裁切 */
+  .lane[data-lane="model"] .node.focus .node-card { top: 46px; bottom: auto; transform-origin: top center; }
+  .node.focus .mini-label { transform: translateX(-50%) scale(1.5); opacity: 1; font-weight: 700; }
   .node-card .nc-year { font-family: var(--mono); font-size: 11px; color: var(--muted); }
   .node-card .nc-name { font-size: 14px; font-weight: 600; margin: 2px 0; }
   .node-card .nc-spec { font-size: 12px; color: var(--muted); font-family: var(--mono); }
@@ -416,7 +418,7 @@ const LANES = { model: 0, chip: 1, board: 2, device: 3 };
 /* ================= 布局 ================= */
 const inner = document.getElementById("tlInner");
 const outer = document.getElementById("tlOuter");
-const W = 4200;
+const W = 5600;
 /* 分段比例尺:1947-2000 压缩为前段(快进铺垫),2000 后逐年展开 */
 const ANCHORS = [[1947,60],[1971,200],[1999.6,440],[2007.5,900],[2012.5,1700],[2017.6,2600],[2027,4140]];
 function yearToX(y) {
@@ -514,69 +516,51 @@ const playBtn = document.getElementById("playBtn");
 const rewBtn = document.getElementById("rewBtn");
 const progressWrap = document.getElementById("progressWrap");
 
-/* 自适应播放速度:事件密集区慢速细看,时间空白区快速掠过。
-   每段速度按像素间距阶梯取值(px/ms) */
-const evsX = EVENTS.map(e => xOf(e.y)).filter(x => x > 60 && x < W - 60).sort((a, b) => a - b);
-const SEGS = (() => {
+/* 焦点轮播引擎:每个节点依次滚动到视口正中央,放大卡片停留展示;
+   节点间隙快速过渡,时间空白区不再空转。
+   播放头固定在视口中心——它指着谁,谁就是舞台主角。 */
+const evSorted = EVENTS
+  .map(ev => ({ ev, x: xOf(ev.y) }))
+  .filter(o => o.x > 60 && o.x < W - 60)
+  .sort((a, b) => a.x - b.x);
+/* 停留时长按信息量分档:内容多的看久一点 */
+const stayDur = ev => Math.min(2600, Math.max(1600, 1100 + (ev.note || "").length * 10 + (ev.spec || "").length * 6));
+/* 过渡时长:与像素间距成正比,但设上下限——空白区快掠,密集区从容 */
+const TRANS_V = 0.85, TRANS_MIN = 320, TRANS_MAX = 1500;
+const PLAN = (() => {
   const segs = [];
-  let acc = 0, prevX = 60;
-  for (const x of [...evsX, W - 60]) {
-    const gap = x - prevX;
-    const v = gap < 130 ? 0.07 : gap < 320 ? 0.26 : 0.80;
-    const dur = Math.min(Math.max(gap / v, 380), 2600);
-    segs.push({ x0: prevX, x1: x, t0: acc, t1: acc + dur });
-    acc += dur; prevX = x;
+  let acc = 0;
+  for (let i = 0; i < evSorted.length; i++) {
+    const { ev, x } = evSorted[i];
+    const stay = stayDur(ev);
+    segs.push({ kind: "stay", ev, x, t0: acc, t1: acc + stay });
+    acc += stay;
+    if (i < evSorted.length - 1) {
+      const nx = evSorted[i + 1].x;
+      const dur = Math.min(Math.max((nx - x) / TRANS_V, TRANS_MIN), TRANS_MAX);
+      segs.push({ kind: "trans", x0: x, x1: nx, evA: ev, evB: evSorted[i + 1].ev, t0: acc, t1: acc + dur });
+      acc += dur;
+    }
   }
   return segs;
 })();
-const DURATION = SEGS[SEGS.length - 1].t1;
-function tToX(t) {
-  if (t <= 0) return 60;
-  for (const s of SEGS) if (t <= s.t1) return s.x0 + (s.x1 - s.x0) * (t - s.t0) / (s.t1 - s.t0);
-  return W - 60;
-}
-function xToT(x) {
-  for (const s of SEGS) if (x <= s.x1) return s.t0 + (s.t1 - s.t0) * (x - s.x0) / (s.x1 - s.x0);
-  return DURATION;
+const DURATION = PLAN.length ? PLAN[PLAN.length - 1].t1 : 1000;
+function tToFocus(t) {
+  if (t <= 0) return { x: evSorted[0].x, focusEv: evSorted[0].ev };
+  for (const s of PLAN) {
+    if (t <= s.t1) {
+      if (s.kind === "stay") return { x: s.x, focusEv: s.ev };
+      const k = (t - s.t0) / (s.t1 - s.t0);
+      const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; /* easeInOutQuad */
+      return { x: s.x0 + (s.x1 - s.x0) * e, focusEv: k < 0.55 ? s.evA : s.evB };
+    }
+  }
+  const last = PLAN[PLAN.length - 1];
+  return { x: last.x, focusEv: last.ev };
 }
 let playing = false, progress = 0, lastTs = 0, displayedModel = -1, elapsed = 0;
-
-function setProgress(p) {
-  progress = Math.min(1, Math.max(0, p));
-  const x = 60 + progress * (W - 120);
-  const year = xToYear(x);
-  playhead.style.left = x + "px";
-  progressBar.style.width = (progress * 100) + "%";
-  yearValue.textContent = Math.floor(year);
-  yearReadout.textContent = Math.floor(year);
-
-  /* 激活节点 + 焦点(最近激活) */
-  let maxModel = 0, focusEv = null;
-  EVENTS.forEach(ev => {
-    const on = ev.y <= year;
-    ev._el.classList.toggle("active", on);
-    if (on) {
-      ev._el.classList.remove("focus");
-      if (ev.lane !== "model" && typeof ev.model === "number" && ev.model > maxModel) maxModel = ev.model;
-      if (!focusEv || ev.y > focusEv.y) focusEv = ev;
-    } else {
-      ev._el.classList.remove("focus");
-    }
-  });
-  if (focusEv) focusEv._el.classList.add("focus");
-
-  /* 模型数字滚动 */
-  if (maxModel !== displayedModel) {
-    displayedModel = maxModel;
-    animateNumber(modelValue, parseFloat(modelValue.textContent) || 0, maxModel, 600);
-  }
-
-  /* 播放头跟随滚动 */
-  const viewL = outer.scrollLeft, viewR = viewL + outer.clientWidth;
-  if (x < viewL + 40 || x > viewR - 120) {
-    outer.scrollLeft = x - outer.clientWidth * 0.35;
-  }
-}
+let focusX = evSorted.length ? evSorted[0].x : 60;
+let scrollCur = 0;
 
 function animateNumber(el, from, to, dur) {
   const t0 = performance.now();
@@ -589,12 +573,52 @@ function animateNumber(el, from, to, dur) {
   })(t0);
 }
 
+function setProgress(p) {
+  progress = Math.min(1, Math.max(0, p));
+  const { x, focusEv } = tToFocus(progress * DURATION);
+  focusX = x;
+  const year = xToYear(x);
+  playhead.style.left = x + "px";
+  progressBar.style.width = (progress * 100) + "%";
+  yearValue.textContent = Math.floor(year);
+  yearReadout.textContent = Math.floor(year);
+
+  /* 激活节点(已发生的) + 舞台焦点(当前居中展示) */
+  let maxModel = 0;
+  EVENTS.forEach(ev => {
+    ev._el.classList.toggle("active", ev.y <= year);
+    ev._el.classList.toggle("focus", ev === focusEv);
+    if (ev.y <= year && ev.lane !== "model" && typeof ev.model === "number" && ev.model > maxModel) maxModel = ev.model;
+  });
+
+  /* 模型数字滚动 */
+  if (maxModel !== displayedModel) {
+    displayedModel = maxModel;
+    animateNumber(modelValue, parseFloat(modelValue.textContent) || 0, maxModel, 600);
+  }
+
+  /* 视口锁定:焦点节点永远在屏幕水平中心 */
+  const target = Math.max(0, Math.min(W - outer.clientWidth, focusX - outer.clientWidth * 0.5));
+  if (!playing) { scrollCur = target; outer.scrollLeft = target; }
+}
+
+/* 平滑滚动循环:播放时缓动追焦,暂停/拖动时静止 */
+(function scrollLoop() {
+  if (playing) {
+    const target = Math.max(0, Math.min(W - outer.clientWidth, focusX - outer.clientWidth * 0.5));
+    scrollCur += (target - scrollCur) * 0.11;
+    if (Math.abs(target - scrollCur) < 0.4) scrollCur = target;
+    outer.scrollLeft = scrollCur;
+  }
+  requestAnimationFrame(scrollLoop);
+})();
+
 function loop(ts) {
   if (!playing) return;
   if (!lastTs) lastTs = ts;
   const dt = ts - lastTs; lastTs = ts;
   elapsed += dt;
-  setProgress((tToX(elapsed) - 60) / (W - 120));
+  setProgress(elapsed / DURATION);
   if (elapsed < DURATION) requestAnimationFrame(loop);
   else { playing = false; playBtn.textContent = "▶"; }
 }
@@ -605,7 +629,6 @@ playBtn.onclick = () => {
   lastTs = 0;
   if (playing) {
     if (elapsed >= DURATION) { elapsed = 0; setProgress(0); }
-    else elapsed = xToT(60 + progress * (W - 120));
     requestAnimationFrame(loop);
   }
 };
@@ -613,8 +636,9 @@ rewBtn.onclick = () => { playing = false; playBtn.textContent = "▶"; elapsed =
 
 progressWrap.onclick = e => {
   const r = progressWrap.getBoundingClientRect();
+  playing = false; playBtn.textContent = "▶";
   setProgress((e.clientX - r.left) / r.width);
-  elapsed = xToT(60 + progress * (W - 120));
+  elapsed = progress * DURATION;
 };
 
 document.addEventListener("keydown", e => {
