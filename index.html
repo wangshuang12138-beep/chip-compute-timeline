@@ -368,6 +368,12 @@ const EVENTS = [
   { y:2023.55, lane:"model", name:"Meta LLaMA 2", mini:"LLaMA 2", spec:"7B ~ 70B 开源", model:70, note:"70B 单卡量化即可跑,开源拐点", src:"https://ai.meta.com/blog/llama-2/", srcName:"Meta 官方" },
   { y:2025.1, lane:"model", name:"DeepSeek R1", mini:"DeepSeek-R1", spec:"671B MoE(激活 37B)· 开源", model:671, note:"推理成本砍一个数量级,蒸馏出 1.5B~70B 全家桶,端侧大模型爆发", src:"https://github.com/deepseek-ai/DeepSeek-R1", srcName:"DeepSeek 官方仓库" },
   { y:2025.3, lane:"model", name:"阿里 Qwen3", mini:"Qwen3", spec:"235B MoE + 32B 稠密 · 开源", model:235, note:"32B 单卡 RTX 5090 可跑,端侧旗舰标配", src:"https://qwenlm.github.io/blog/qwen3/", srcName:"Qwen 官方" },
+  { y:2025.35, lane:"model", name:"Meta Llama 4", mini:"Llama 4", spec:"400B MoE(激活17B)· 开源", model:400, note:"Maverick 400B + Scout 109B 同发,开源旗舰转向 MoE,可自托管(2025.4)", src:"https://ai.meta.com/blog/llama-4-multimodal-intelligence/", srcName:"Meta 官方" },
+  { y:2025.6, lane:"model", name:"OpenAI GPT-5", mini:"GPT-5", spec:"参数未披露 · 统一推理模型", model:null, note:"主线模型首次原生融合推理,闭源旗舰进入推理时代(2025.8)", src:"https://openai.com/index/introducing-gpt-5/", srcName:"OpenAI 官方" },
+  { y:2025.92, lane:"model", name:"Google Gemini 3", mini:"Gemini 3", spec:"参数未披露 · 1M 上下文(试验2M)", model:null, note:"原生多模态融合,发布后登 LMArena 榜首(2025.11)", src:"https://deepmind.google/technologies/gemini/", srcName:"Google DeepMind 官方" },
+  { y:2026.3, lane:"model", name:"DeepSeek V4", mini:"DeepSeek V4", spec:"V4-Pro 1.6T MoE(激活49B)· 开源", model:1600, note:"V4-Flash 284B/13B 同发,1M 上下文;万亿参数级,昇腾 Atlas 350 首发适配(2026.4)", src:"https://huggingface.co/deepseek-ai", srcName:"DeepSeek · Hugging Face" },
+  { y:2026.78, lane:"model", name:"DeepSeek V4.1 Flash", mini:"V4.1 Flash", spec:"552B MoE · 输入激活8B/输出16B · 开源", model:552, note:"非对称编解码架构,全面超越自家 Pro 还降价,Agent 效率旗舰(2026.9)", src:"https://huggingface.co/deepseek-ai", srcName:"DeepSeek · Hugging Face" },
+  { y:2026.87, lane:"model", name:"月之暗面 Kimi K3.1 Pro", mini:"Kimi K3.1 Pro", spec:"2.8T MoE(激活104B)· 开放权重", model:2800, note:"100万上下文,原生图像视频输入,国产参数规模新高度(2026.10)", src:"https://www.moonshot.cn/", srcName:"月之暗面官方" },
 
   /* ===== 芯片 ===== */
   { y:1947,   lane:"chip", name:"贝尔实验室 · 晶体管", mini:"贝尔实验室 晶体管", spec:"点接触式晶体管问世", model:null, note:"算力的起点", src:"https://ethw.org/History_of_the_Transistor", srcName:"IEEE ETHW 技术史" },
