@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>从晶体管到算力网关 · 芯片与算力硬件演化史</title>
-<meta name="description" content="八十年芯片演化，二十年算力搬家。一条可播放的时间轴，看懂算力如何从机房走进网关。">
+<meta name="description" content="八十年芯片演化,二十年算力搬家。一条可播放的时间轴,看懂算力如何从机房走进网关。">
 <style>
   :root {
     --bg: #0b0d12;
@@ -135,7 +135,7 @@
   .lane[data-lane="board"] .node.active .node-dot { background: var(--cyan); box-shadow: 0 0 14px rgba(94,177,200,.6); }
   .lane[data-lane="device"] .node.active .node-dot { background: var(--violet); box-shadow: 0 0 14px rgba(154,127,212,.6); }
 
-  /* 迷你标签：点亮后显示 */
+  /* 迷你标签:点亮后显示 */
   .mini-label {
     position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
     font-size: 10px; color: var(--muted); white-space: nowrap;
@@ -147,11 +147,11 @@
   .lane[data-lane="chip"] .node.active .mini-label { color: var(--gold); }
   .lane[data-lane="board"] .node.active .mini-label { color: var(--cyan); }
   .lane[data-lane="device"] .node.active .mini-label { color: var(--violet); }
-  /* 密集区标签翻转到节点上方，避免相邻重叠：alt=上层 alt2=再上层 */
+  /* 密集区标签翻转到节点上方,避免相邻重叠:alt=上层 alt2=再上层 */
   .node.alt .mini-label { top: auto; bottom: 18px; }
   .node.alt2 .mini-label { top: auto; bottom: 34px; }
 
-  /* 模型规模徽章：常驻显示在节点正上方，硬件支持多大模型一眼可见 */
+  /* 模型规模徽章:常驻显示在节点正上方,硬件支持多大模型一眼可见 */
   .model-pill {
     position: absolute; bottom: 54px; left: 50%; transform: translateX(-50%);
     font-family: var(--mono); font-size: 9px; padding: 1px 7px; border-radius: 3px;
@@ -172,13 +172,13 @@
     pointer-events: none; z-index: 4;
     box-shadow: 0 8px 28px rgba(0,0,0,.5);
   }
-  /* 焦点节点（播放头刚经过）展开卡片；悬停任意已激活节点也展开 */
+  /* 焦点节点(播放头刚经过)展开卡片;悬停任意已激活节点也展开 */
   .node.focus .node-card, .node.active:hover .node-card {
     opacity: 1; filter: none; transform: translateX(-50%) translateY(0);
     pointer-events: auto; border-color: rgba(233,231,226,0.22);
     z-index: 8;
   }
-  /* 放大镜：播放头焦点节点卡片放大 + 迷你标签放大加亮 */
+  /* 放大镜:播放头焦点节点卡片放大 + 迷你标签放大加亮 */
   .node.focus .node-card {
     transform: translateX(-50%) translateY(0) scale(1.09);
     border-color: rgba(217,166,72,.6);
@@ -268,8 +268,8 @@
 
 <div class="dashboard">
   <div class="hero-title">
-    <h1>算力一直在搬家，离数据越来越近</h1>
-    <p>八十年芯片演化 · 二十年算力搬家 · <span class="lede">播放头扫过之处，就是算力到达的地方</span></p>
+    <h1>算力一直在搬家,离数据越来越近</h1>
+    <p>八十年芯片演化 · 二十年算力搬家 · <span class="lede">播放头扫过之处,就是算力到达的地方</span></p>
   </div>
   <div class="dial">
     <div class="label">当前年份</div>
@@ -297,6 +297,10 @@
       <div class="lane-bg"></div>
       <span class="lane-label">板卡 · 模组</span>
     </div>
+    <div class="lane" data-lane="device" style="top:630px">
+      <div class="lane-bg"></div>
+      <span class="lane-label">一体机 · 设备</span>
+    </div>
     <div id="playhead"></div>
   </div>
 </div>
@@ -308,27 +312,23 @@
     <div class="rule">
       <span class="num">01</span>
       <div>
-        <h3>数据在哪，算力去哪</h3>
-        <p>响应延迟 × 带宽成本 × 隐私约束，三个力一起推。这是物理规律，不是商业预测。</p>
+        <h3>数据在哪,算力去哪</h3>
+        <p>响应延迟 × 带宽成本 × 隐私约束,三个力一起推。这是物理规律,不是商业预测。</p>
       </div>
     </div>
     <div class="rule">
       <span class="num">02</span>
       <div>
         <h3>芯片专用化随场景确定性加深</h3>
-        <p>场景越确定，芯片越专用，能效越高（CPU→GPU→NPU→存算一体）。高阶网关用昇腾推理芯片而非通用 GPU，是这条规律的体现，不是妥协。</p>
+        <p>场景越确定,芯片越专用,能效越高(CPU→GPU→NPU→存算一体)。高阶网关用昇腾推理芯片而非通用 GPU,是这条规律的体现,不是妥协。</p>
       </div>
     </div>
     <div class="rule">
       <span class="num">03</span>
       <div>
         <h3>每次搬家，新形态吃掉旧形态的一部分功能</h3>
-        <p>交换机吃掉集线器，云吃掉一部分服务器，现在网关开始吃边缘盒子——因为盒子解决的"算力到场"问题，网关解决得更好：算力到场 + 网络在场 + 运维在位。</p>
+        <p>交换机吃掉集线器，云吃掉一部分服务器，现在网关开始吃边缘盒子——因为盒子解决的“算力到场”问题，网关解决得更好：算力到场 + 网络在场 + 运维在位。</p>
       </div>
-    </div>
-    <div class="lane" data-lane="device" style="top:630px">
-      <div class="lane-bg"></div>
-      <span class="lane-label">一体机 · 设备</span>
     </div>
   </div>
 </section>
@@ -345,13 +345,13 @@
     </table>
   </div>
   <div class="methodology">
-    <strong>模型规模估算口径：</strong>基于 INT8/INT4 量化推理的社区经验值（约 2 TOPS/B 参数起），仅作量级感知，非厂商标称。标 "CV" 表示该硬件诞生时只能跑传统视觉模型，大模型时代尚未到来。"—" 表示该事件非硬件产品。所有硬件规格与发布时间均以官方出处为准；估算值随核查持续修订。
+    <strong>模型规模估算口径:</strong>基于 INT8/INT4 量化推理的社区经验值(约 2 TOPS/B 参数起),仅作量级感知,非厂商标称。标 "CV" 表示该硬件诞生时只能跑传统视觉模型,大模型时代尚未到来。"-" 表示该事件非硬件产品。所有硬件规格与发布时间均以官方出处为准;估算值随核查持续修订。
   </div>
 </section>
 
 <footer>
   从晶体管到算力网关 · 交互时间轴 · 2026-11
-  <div class="ref">设计参考：Stripe 发布页叙事 × Linear 克制用色 · 单文件零依赖 · 数据可溯源</div>
+  <div class="ref">设计参考:Stripe 发布页叙事 × Linear 克制用色 · 单文件零依赖 · 数据可溯源</div>
 </footer>
 
 <script>
@@ -359,39 +359,39 @@
 /* lane: chip=芯片  board=板卡·模组  device=一体机·设备
    model: 可跑模型规模(B, 估算)  0=问世时跑不了LLM  cv=传统视觉模型时代  null=非硬件事件 */
 const EVENTS = [
-  /* ===== 模型（最上层：算法与模型的演进） ===== */
-  { y:2012.5, lane:"model", name:"多伦多大学 AlexNet", mini:"AlexNet", spec:"深度卷积网络 · ImageNet 错误率 ↓10pp", model:null, note:"GPU 被 AI 正式征用，深度学习的起点", src:"https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks", srcName:"NeurIPS 2012 论文" },
+  /* ===== 模型(最上层:算法与模型的演进) ===== */
+  { y:2012.5, lane:"model", name:"多伦多大学 AlexNet", mini:"AlexNet", spec:"深度卷积网络 · ImageNet 错误率 ↓10pp", model:null, note:"GPU 被 AI 正式征用,深度学习的起点", src:"https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks", srcName:"NeurIPS 2012 论文" },
   { y:2017.6, lane:"model", name:"Google Transformer", mini:"Transformer", spec:"Attention Is All You Need · 大模型架构奠基", model:null, note:"此后一切大模型的底座", src:"https://arxiv.org/abs/1706.03762", srcName:"arXiv 1706.03762" },
-  { y:2020.6, lane:"model", name:"OpenAI GPT-3", mini:"GPT-3", spec:"175B · 训练 V100 万卡级", model:175, note:"大力出奇迹，参数即能力", src:"https://openai.com/index/language-models-are-few-shot-learners/", srcName:"OpenAI 官方" },
+  { y:2020.6, lane:"model", name:"OpenAI GPT-3", mini:"GPT-3", spec:"175B · 训练 V100 万卡级", model:175, note:"大力出奇迹,参数即能力", src:"https://openai.com/index/language-models-are-few-shot-learners/", srcName:"OpenAI 官方" },
   { y:2022.9, lane:"model", name:"OpenAI ChatGPT", mini:"ChatGPT", spec:"GPT-3.5", model:null, note:"端侧跑大模型的需求被点燃", src:"https://openai.com/index/chatgpt/", srcName:"OpenAI 官方" },
   { y:2023.25, lane:"model", name:"百度 文心一言", mini:"文心一言", spec:"国产首个公开发布大模型", model:null, note:"国产大模型元年开启", src:"https://yiyan.baidu.com/", srcName:"百度官方" },
-  { y:2023.55, lane:"model", name:"Meta LLaMA 2", mini:"LLaMA 2", spec:"7B ~ 70B 开源", model:70, note:"70B 单卡量化即可跑，开源拐点", src:"https://ai.meta.com/blog/llama-2/", srcName:"Meta 官方" },
-  { y:2025.1, lane:"model", name:"DeepSeek R1", mini:"DeepSeek-R1", spec:"671B MoE（激活 37B）· 开源", model:671, note:"推理成本砍一个数量级，蒸馏出 1.5B~70B 全家桶，端侧大模型爆发", src:"https://github.com/deepseek-ai/DeepSeek-R1", srcName:"DeepSeek 官方仓库" },
-  { y:2025.3, lane:"model", name:"阿里 Qwen3", mini:"Qwen3", spec:"235B MoE + 32B 稠密 · 开源", model:235, note:"32B 单卡 RTX 5090 可跑，端侧旗舰标配", src:"https://qwenlm.github.io/blog/qwen3/", srcName:"Qwen 官方" },
+  { y:2023.55, lane:"model", name:"Meta LLaMA 2", mini:"LLaMA 2", spec:"7B ~ 70B 开源", model:70, note:"70B 单卡量化即可跑,开源拐点", src:"https://ai.meta.com/blog/llama-2/", srcName:"Meta 官方" },
+  { y:2025.1, lane:"model", name:"DeepSeek R1", mini:"DeepSeek-R1", spec:"671B MoE(激活 37B)· 开源", model:671, note:"推理成本砍一个数量级,蒸馏出 1.5B~70B 全家桶,端侧大模型爆发", src:"https://github.com/deepseek-ai/DeepSeek-R1", srcName:"DeepSeek 官方仓库" },
+  { y:2025.3, lane:"model", name:"阿里 Qwen3", mini:"Qwen3", spec:"235B MoE + 32B 稠密 · 开源", model:235, note:"32B 单卡 RTX 5090 可跑,端侧旗舰标配", src:"https://qwenlm.github.io/blog/qwen3/", srcName:"Qwen 官方" },
 
   /* ===== 芯片 ===== */
   { y:1947,   lane:"chip", name:"贝尔实验室 · 晶体管", mini:"贝尔实验室 晶体管", spec:"点接触式晶体管问世", model:null, note:"算力的起点", src:"https://ethw.org/History_of_the_Transistor", srcName:"IEEE ETHW 技术史" },
   { y:1971,   lane:"chip", name:"Intel 4004", spec:"首个商用微处理器 · 740kHz", model:null, note:"算力缩进指甲盖", src:"https://www.intel.com/content/www/us/en/history/museum-story-of-intel-4004.html", srcName:"Intel 官方" },
-  { y:1999.6, lane:"chip", name:"NVIDIA GeForce 256", spec:"首个 GPU 概念", model:null, note:"并行架构诞生，为游戏而生", src:"https://www.nvidia.com/en-us/about-nvidia/corporate-timeline/", srcName:"NVIDIA 官方时间线" },
+  { y:1999.6, lane:"chip", name:"NVIDIA GeForce 256", spec:"首个 GPU 概念", model:null, note:"并行架构诞生,为游戏而生", src:"https://www.nvidia.com/en-us/about-nvidia/corporate-timeline/", srcName:"NVIDIA 官方时间线" },
   { y:2007.5, lane:"chip", name:"NVIDIA CUDA", spec:"GPU 通用编程平台", model:null, note:"游戏显卡变科研武器", src:"https://www.nvidia.com/en-us/about-nvidia/corporate-timeline/", srcName:"NVIDIA 官方时间线" },
-  { y:2015.3, lane:"chip", name:"Google TPU v1", spec:"ASIC · 92 TOPS INT8", model:null, note:"专用化开端：只为矩阵运算（2015 年内部部署）", src:"https://cloud.google.com/blog/products/ai-machine-learning/an-in-depth-look-at-googles-first-tensor-processing-unit-tpu", srcName:"Google Cloud 官方" },
+  { y:2015.3, lane:"chip", name:"Google TPU v1", spec:"ASIC · 92 TOPS INT8", model:null, note:"专用化开端:只为矩阵运算(2015 年内部部署)", src:"https://cloud.google.com/blog/products/ai-machine-learning/an-in-depth-look-at-googles-first-tensor-processing-unit-tpu", srcName:"Google Cloud 官方" },
   { y:2017.9, lane:"chip", name:"寒武纪 Cambricon-1A", mini:"Cambricon-1A", spec:"麒麟970 内置 NPU", model:null, note:"手机芯片第一次集成 AI 单元", src:"https://www.cambricon.com/index.php?m=content&c=index&a=lists&catid=73", srcName:"寒武纪官方" },
   { y:2018.77, lane:"chip", name:"华为 昇腾 310", mini:"昇腾310", spec:"推理芯片 · 16 TOPS INT8 / 8W", model:null, note:"端侧推理 · 后来装进运营商网关的就是它", src:"https://e.huawei.com/en/products/computing/ascend/ascend-310", srcName:"华为官方" },
   { y:2019.2, lane:"chip", name:"华为 昇腾 910", mini:"昇腾910", spec:"训练芯片 · 256 TFLOPS FP16", model:null, note:"国产训练算力对标国际旗舰 · 2018.10 与 310 同场发布", src:"https://e.huawei.com/en/products/computing/ascend/ascend-910", srcName:"华为官方" },
 
-  /* ===== 板卡 · 模组（算力 + 可部署模型） ===== */
-  { y:2014.23, lane:"board", name:"NVIDIA Jetson TK1", mini:"TK1", spec:"0.3 TFLOPS · 首款嵌入式 AI 超算", model:0, note:"算力第一次走出机房（2014.3 GTC）", src:"https://blogs.nvidia.com/blog/jetson-tk1/", srcName:"NVIDIA 官方" },
+  /* ===== 板卡 · 模组(算力 + 可部署模型) ===== */
+  { y:2014.23, lane:"board", name:"NVIDIA Jetson TK1", mini:"TK1", spec:"0.3 TFLOPS · 首款嵌入式 AI 超算", model:0, note:"算力第一次走出机房(2014.3 GTC)", src:"https://blogs.nvidia.com/blog/jetson-tk1/", srcName:"NVIDIA 官方" },
   { y:2015.85, lane:"board", name:"NVIDIA Jetson TX1", mini:"TX1", spec:"1 TFLOPS FP16 · 64bit", model:0, note:"边缘开发平台成型", src:"https://developer.nvidia.com/embedded/jetson-tx1", srcName:"NVIDIA 官方" },
   { y:2017.3, lane:"board", name:"NVIDIA Jetson TX2", mini:"TX2", spec:"2 TOPS", model:0, note:"边缘算力翻倍", src:"https://developer.nvidia.com/embedded/jetson-tx2", srcName:"NVIDIA 官方" },
-  { y:2018.6, lane:"board", name:"NVIDIA Jetson AGX Xavier", mini:"Xavier", spec:"32 TOPS", model:0.1, note:"边缘推理可用，~0.1B 级", src:"https://developer.nvidia.com/embedded/jetson-agx-xavier-developer-kit", srcName:"NVIDIA 官方" },
+  { y:2018.6, lane:"board", name:"NVIDIA Jetson AGX Xavier", mini:"Xavier", spec:"32 TOPS", model:0.1, note:"边缘推理可用,~0.1B 级", src:"https://developer.nvidia.com/embedded/jetson-agx-xavier-developer-kit", srcName:"NVIDIA 官方" },
   { y:2019.3, lane:"board", name:"NVIDIA Jetson Nano", mini:"Nano", spec:"$99 · 0.5 TFLOPS", model:0, note:"全民 AI 开发板", src:"https://developer.nvidia.com/embedded/jetson-nano-developer-kit", srcName:"NVIDIA 官方" },
   { y:2019.4, lane:"board", name:"华为 Atlas 200 / 300", mini:"Atlas 300", spec:"200 模组 16 TOPS · 300 推理卡 64 TOPS", model:1, note:"国产边缘模组工业化", src:"https://e.huawei.com/en/products/computing/ascend/atlas-300i-pro", srcName:"华为官方" },
-  { y:2021.95, lane:"board", name:"瑞芯微 RK3588", mini:"RK3588", spec:"8nm · 6 TOPS NPU", model:0.3, note:"国产边缘盒子事实标准（2021.12 发布）", src:"https://www.rock-chips.com/a/cn/product/RK35/2022/0926/1660.html", srcName:"瑞芯微官方" },
+  { y:2021.95, lane:"board", name:"瑞芯微 RK3588", mini:"RK3588", spec:"8nm · 6 TOPS NPU", model:0.3, note:"国产边缘盒子事实标准(2021.12 发布)", src:"https://www.rock-chips.com/a/cn/product/RK35/2022/0926/1660.html", srcName:"瑞芯微官方" },
   { y:2022.3, lane:"board", name:"NVIDIA Jetson AGX Orin", mini:"AGX Orin", spec:"275 TOPS", model:7, note:"7B 级本地大模型成真", src:"https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/", srcName:"NVIDIA 官方" },
   { y:2022.6, lane:"board", name:"算能 BM1684X", mini:"BM1684X", spec:"32 TOPS INT8", model:1, note:"盒子价格打到千元档", src:"https://www.sophgo.com/product/", srcName:"算能官方" },
-  { y:2025.6, lane:"board", name:"NVIDIA Jetson AGX Thor", mini:"AGX Thor", spec:"2070 TFLOPS FP4（稀疏）", model:70, note:"边缘算力剑指机器人，70B 级（2025.8 上市）", src:"https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-thor/", srcName:"NVIDIA 官方" },
+  { y:2025.6, lane:"board", name:"NVIDIA Jetson AGX Thor", mini:"AGX Thor", spec:"2070 TFLOPS FP4(稀疏)", model:70, note:"边缘算力剑指机器人,70B 级(2025.8 上市)", src:"https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-thor/", srcName:"NVIDIA 官方" },
 
-  /* ===== 一体机 · 设备（算力 + 可部署模型） ===== */
+  /* ===== 一体机 · 设备(算力 + 可部署模型) ===== */
   { y:2019.4, lane:"device", name:"华为 Atlas 500 智能小站", mini:"Atlas 500", spec:"16 TOPS · 边缘一体机", model:1, note:"边缘盒子工业化", src:"https://e.huawei.com/en/products/computing/ascend/atlas-500", srcName:"华为官方" },
   { y:2019.7, lane:"device", name:"华为 Atlas 800 / 900", mini:"Atlas 900", spec:"训练服务器 / AI 集群", model:null, note:"国产训练算力标杆", src:"https://e.huawei.com/en/products/computing/ascend/atlas-800-training-server", srcName:"华为官方" },
   { y:2023.85, lane:"device", name:"中国电信 算力化网关", mini:"电信算力网关", spec:"FTTO + 昇腾算力 · 支持 7B/14B", model:14, note:"全球首个商用 网络+算力 融合终端 ★ · 企业资料口径", src:"https://www.c114.com.cn/news/117/a1247662.html", srcName:"C114 · 2023数字科技生态大会(2023.11 广州)" },
@@ -406,7 +406,7 @@ const LANES = { model: 0, chip: 1, board: 2, device: 3 };
 const inner = document.getElementById("tlInner");
 const outer = document.getElementById("tlOuter");
 const W = 4200;
-/* 分段比例尺：1947-2000 压缩为前段（快进铺垫），2000 后逐年展开 */
+/* 分段比例尺:1947-2000 压缩为前段(快进铺垫),2000 后逐年展开 */
 const ANCHORS = [[1947,60],[1971,200],[1999.6,440],[2007.5,900],[2012.5,1700],[2017.6,2600],[2027,4140]];
 function yearToX(y) {
   for (let i = 1; i < ANCHORS.length; i++) {
@@ -424,7 +424,7 @@ function xToYear(x) {
 }
 const xOf = yearToX;
 
-/* 年份网格：前段只标关键年，2012 后每 2 年一条 */
+/* 年份网格:前段只标关键年,2012 后每 2 年一条 */
 const grid = document.getElementById("gridLines");
 [1971, 1999, 2005, 2010].forEach(yr => addGrid(yr));
 for (let yr = 2012; yr <= 2026; yr += 2) addGrid(yr);
@@ -436,7 +436,7 @@ function addGrid(yr) {
   grid.appendChild(gl);
 }
 
-/* 渲染节点：同泳道按水平间距分三层放置迷你标签（下/上18px/上34px），避免叠字 */
+/* 渲染节点:同泳道按水平间距分三层放置迷你标签(下/上18px/上34px),避免叠字 */
 const laneEls = document.querySelectorAll(".lane");
 const laneLvLastX = { model: [-1e9, -1e9, -1e9], chip: [-1e9, -1e9, -1e9], board: [-1e9, -1e9, -1e9], device: [-1e9, -1e9, -1e9] };
 EVENTS.slice().sort((a, b) => a.y - b.y).forEach(ev => {
@@ -456,7 +456,7 @@ EVENTS.slice().sort((a, b) => a.y - b.y).forEach(ev => {
     : `<span class="nc-model">可跑 ~${ev.model}B 模型</span>`;
   const srcLink = ev.src
     ? `<a class="nc-src" href="${ev.src}" target="_blank" rel="noopener">来源 · ${ev.srcName} ↗</a>`
-    : `<span class="nc-src missing" title="官方出处待补">来源待核…</span>`;
+    : `<span class="nc-src missing" title="官方出处待补">来源待核...</span>`;
   const modelPill = ev.model === null ? ""
     : isModelLane ? `<span class="model-pill">${ev.model}B 参数</span>`
     : ev.model === 0 ? `<span class="model-pill cv">CV only · 跑不了 LLM</span>`
@@ -487,7 +487,7 @@ function fmtYear(y) {
 const tbody = document.querySelector("#dataTable tbody");
 EVENTS.slice().sort((a, b) => a.y - b.y).forEach(ev => {
   const laneTag = { model: '<span class="t-lane t-model">模型</span>', chip: '<span class="t-lane t-chip">芯片</span>', board: '<span class="t-lane t-board">板卡·模组</span>', device: '<span class="t-lane t-device">一体机·设备</span>' }[ev.lane];
-  const model = ev.model === null ? "—" : ev.lane === "model" ? `${ev.model}B 参数` : ev.model === 0 ? "CV" : `~${ev.model}B`;
+  const model = ev.model === null ? "-" : ev.lane === "model" ? `${ev.model}B 参数` : ev.model === 0 ? "CV" : `~${ev.model}B`;
   const src = ev.src ? `<a href="${ev.src}" target="_blank" rel="noopener">${ev.srcName} ↗</a>` : `<span style="color:#b0553f">待核</span>`;
   tbody.insertAdjacentHTML("beforeend",
     `<tr><td>${fmtYear(ev.y)}</td><td>${laneTag}</td><td><strong>${ev.name}</strong></td><td style="font-family:var(--mono);font-size:12px">${ev.spec}</td><td>${model}</td><td>${ev.note}</td><td>${src}</td></tr>`);
@@ -503,8 +503,8 @@ const playBtn = document.getElementById("playBtn");
 const rewBtn = document.getElementById("rewBtn");
 const progressWrap = document.getElementById("progressWrap");
 
-/* 自适应播放速度：事件密集区慢速细看，时间空白区快速掠过。
-   每段速度按像素间距阶梯取值（px/ms） */
+/* 自适应播放速度:事件密集区慢速细看,时间空白区快速掠过。
+   每段速度按像素间距阶梯取值(px/ms) */
 const evsX = EVENTS.map(e => xOf(e.y)).filter(x => x > 60 && x < W - 60).sort((a, b) => a - b);
 const SEGS = (() => {
   const segs = [];
@@ -539,7 +539,7 @@ function setProgress(p) {
   yearValue.textContent = Math.floor(year);
   yearReadout.textContent = Math.floor(year);
 
-  /* 激活节点 + 焦点（最近激活） */
+  /* 激活节点 + 焦点(最近激活) */
   let maxModel = 0, focusEv = null;
   EVENTS.forEach(ev => {
     const on = ev.y <= year;
